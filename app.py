@@ -108,8 +108,11 @@ fig = px.choropleth(
 st.plotly_chart(fig, use_container_width=True)
 st.subheader("🧬 Subtype Analysis – Most Common Pathogens")
 
+# Drop missing species before grouping
+filtered_df = df.dropna(subset=["Species"])
+
 # Group by species (pathogen) and sum illnesses
-species_data = df.groupby("Species")["Illnesses"].sum().sort_values(ascending=False).reset_index()
+species_data = filtered_df.groupby("Species")["Illnesses"].sum().sort_values(ascending=False).reset_index()
 
 # Take top 10 pathogens
 top_species = species_data.head(10)
@@ -125,5 +128,4 @@ fig = px.bar(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 
