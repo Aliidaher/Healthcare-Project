@@ -229,11 +229,15 @@ st.plotly_chart(fig_avg, use_container_width=True)
 
 st.subheader("🍗 Food Type Breakdown – Top Foods Involved in Outbreaks")
 
-# Drop missing or vague entries
-df_food = df.dropna(subset=["Food"])
-
-# Clean whitespace, convert to title case
+# Clean and standardize the Food column
+df_food = df.copy()
 df_food["Food"] = df_food["Food"].astype(str).str.strip().str.title()
+
+# Replace invalid food entries with proper NaN
+df_food["Food"] = df_food["Food"].replace(["None", "Nan", "NaN", "Unspecified", "Unk", ""], pd.NA)
+
+# Drop missing values
+df_food = df_food.dropna(subset=["Food"])
 
 # Group and sum illnesses
 food_data = (
@@ -246,7 +250,7 @@ food_data = (
 # Take top 10 food types
 top_foods = food_data.head(10)
 
-# Bar chart
+# Chart
 fig_food = px.bar(
     top_foods,
     x="Food",
@@ -257,3 +261,4 @@ fig_food = px.bar(
 )
 
 st.plotly_chart(fig_food, use_container_width=True)
+
