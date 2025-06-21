@@ -213,26 +213,3 @@ species_year = filtered_df.groupby(["Year", "Species"])["Illnesses"].sum().reset
 fig = px.area(species_year, x="Year", y="Illnesses", color="Species", title="Illness Trends by Pathogen Over Time")
 st.plotly_chart(fig, use_container_width=True)
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-st.subheader("📆 Calendar Heatmap – Monthly Illness Trends by Year")
-
-# Clean month column and ensure consistent order
-month_order = ["January", "February", "March", "April", "May", "June",
-               "July", "August", "September", "October", "November", "December"]
-
-df_heat = filtered_df.dropna(subset=["Month", "Year", "Illnesses"]).copy()
-df_heat["Month"] = pd.Categorical(df_heat["Month"], categories=month_order, ordered=True)
-
-# Create pivot table: rows = Year, cols = Month
-pivot = df_heat.groupby(["Year", "Month"])["Illnesses"].sum().unstack().fillna(0)
-
-# Plot heatmap using seaborn
-fig, ax = plt.subplots(figsize=(12, 6))
-sns.heatmap(pivot, cmap="YlOrRd", linewidths=0.5, annot=True, fmt=".0f", ax=ax)
-plt.title("Monthly Illness Count Heatmap by Year")
-plt.xlabel("Month")
-plt.ylabel("Year")
-
-st.pyplot(fig)
