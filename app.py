@@ -49,3 +49,18 @@ fig = px.line(
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.subheader("🏠 Distribution by Exposure Location")
+
+location_data = df.groupby("Location")["Illnesses"].sum().sort_values(ascending=False).reset_index()
+
+fig = px.bar(
+    location_data,
+    x="Location",
+    y="Illnesses",
+    title="Total Illnesses by Exposure Location",
+    labels={"Illnesses": "Number of Illnesses"},
+    height=500
+)
+
+st.plotly_chart(fig, use_container_width=True)
+st.caption("ℹ️ Gender and age data were not available in this dataset. Exposure location is used as a proxy for setting-related risk.")
