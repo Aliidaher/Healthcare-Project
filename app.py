@@ -29,3 +29,23 @@ for col in cat_cols:
 df.drop_duplicates(inplace=True)
 df = df[(df["Illnesses"] > 0) | (df["Hospitalizations"] > 0) | (df["Fatalities"] > 0)]
 df = df[df["Year"] >= 1980]
+import plotly.express as px
+
+# === Trend Analysis ===
+st.subheader("📈 Trends Over Time")
+
+# Group by year and sum illnesses
+trend_data = df.groupby("Year")["Illnesses"].sum().reset_index()
+
+# Create line chart
+fig = px.line(
+    trend_data,
+    x="Year",
+    y="Illnesses",
+    title="Total Foodborne Illnesses Reported by Year",
+    markers=True,
+    labels={"Illnesses": "Number of Illnesses", "Year": "Year"}
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
