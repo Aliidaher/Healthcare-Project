@@ -138,3 +138,28 @@ fig = px.bar(
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.subheader("💉 Pathogen Severity – Hospitalization Rate")
+
+# Drop missing values
+df_severity = df.dropna(subset=["Species", "Illnesses", "Hospitalizations"])
+
+# Group and calculate hospitalization rate
+severity_data = (
+    df_severity.groupby("Species")[["Illnesses", "Hospitalizations"]]
+    .sum()
+    .reset_index()
+)
+severity_data["Hospitalization Rate (%)"] = (severity_data["Hospitalizations"] / severity_data["Illnesses"]) * 100
+severity_data = severity_data.sort_values("Hospitalization Rate (%)", ascending=False).head(10)
+
+# Bar chart
+fig = px.bar(
+    severity_data,
+    x="Species",
+    y="Hospitalization Rate (%)",
+    title="Top 10 Pathogens by Hospitalization Rate",
+    labels={"Species": "Pathogen", "Hospitalization Rate (%)": "Hospitalization Rate (%)"},
+    height=500
+)
+
+st.plotly_chart(fig, use_container_width=True)
