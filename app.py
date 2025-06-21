@@ -163,3 +163,30 @@ fig = px.bar(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("📅 Seasonal Trend – Illnesses by Month")
+
+# Clean and organize month data
+month_order = ["January", "February", "March", "April", "May", "June",
+               "July", "August", "September", "October", "November", "December"]
+
+df_month = df.dropna(subset=["Month", "Illnesses"])
+monthly_data = (
+    df_month.groupby("Month")["Illnesses"]
+    .sum()
+    .reindex(month_order)  # ensure correct month order
+    .reset_index()
+)
+
+# Line chart of seasonal trend
+fig = px.line(
+    monthly_data,
+    x="Month",
+    y="Illnesses",
+    title="Seasonal Trend of Foodborne Illnesses",
+    markers=True,
+    labels={"Illnesses": "Number of Illnesses"},
+    height=400
+)
+
+st.plotly_chart(fig, use_container_width=True)
