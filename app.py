@@ -157,22 +157,26 @@ if not df_food.empty:
 else:
     st.info("No food data available for the selected filters.")
 
-st.subheader("🧮 Correlation Between Illnesses, Hospitalizations & Fatalities")
+st.subheader("📉 Yearly Trends – Illnesses, Hospitalizations & Fatalities")
 
-df_corr = filtered_df.dropna(subset=["Illnesses", "Hospitalizations", "Fatalities"])
-df_corr = df_corr[(df_corr["Illnesses"] > 0) & (df_corr["Hospitalizations"] > 0)]
+# Group and sum all severity indicators by year
+yearly_summary = (
+    filtered_df
+    .groupby("Year")[["Illnesses", "Hospitalizations", "Fatalities"]]
+    .sum()
+    .reset_index()
+)
 
-if not df_corr.empty:
-    fig = px.scatter(
-        df_corr,
-        x="Illnesses",
-        y="Hospitalizations",
-        size="Fatalities",
-        color="Species",
-        hover_data=["State", "Year", "Food", "Location"],
-        title="Illnesses vs Hospitalizations (Bubble Size = Fatalities)",
-        size_max=40
-    )
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.info("No data points available for the scatter plot based on current filters.")
+# Melt for multiple lines on same chart
+yearly_melted = yearly_summary.melt(id_vars="Year", value_vars=["Illnesses", "Hospitalizations", "Fatalities"],
+                                     var_name="Outcome", value_name="Count")
+
+fig = px.line(
+    yearly_melted,
+    x="Year",
+    y="Count",
+    color="Outcome",
+    markers=True,
+    title="Yearly Trends of Illnesses, Hospitalizations, and Fatalities"
+)
+st.plotly_chart(fig, use_container_width=True)
