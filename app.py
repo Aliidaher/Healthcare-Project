@@ -135,3 +135,67 @@ df_food = df_food.dropna(subset=["Food"])
 food_data = df_food.groupby("Food")["Illnesses"].sum().sort_values(ascending=False).reset_index().head(10)
 fig = px.bar(food_data, x="Food", y="Illnesses", title="Top 10 Food Items Associated with Outbreaks", height=500)
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("📉 Yearly Trends – Illnesses, Hospitalizations & Fatalities")
+
+# Group and sum all severity indicators by year
+yearly_summary = (
+    filtered_df
+    .groupby("Year")[["Illnesses", "Hospitalizations", "Fatalities"]]
+    .sum()
+    .reset_index()
+)
+
+# Melt for multiple lines on same chart
+yearly_melted = yearly_summary.melt(id_vars="Year", value_vars=["Illnesses", "Hospitalizations", "Fatalities"],
+                                     var_name="Outcome", value_name="Count")
+
+fig = px.line(
+    yearly_melted,
+    x="Year",
+    y="Count",
+    color="Outcome",
+    markers=True,
+    title="Yearly Trends of Illnesses, Hospitalizations, and Fatalities"
+)
+st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("🥧 Food Type Distribution (Top 10) – Pie Chart")
+
+# Reuse cleaned df_food from earlier
+food_totals = (
+    df_food.groupby("Food")["Illnesses"]
+    .sum()
+    .sort_values(ascending=False)
+    .reset_index()
+    .head(10)
+)
+
+fig_pie = px.pie(
+    food_totals,
+    names="Food",
+    values="Illnesses",
+    title="Top 10 Food Categories Involved in Illnesses"
+)
+st.plotly_chart(fig_pie, use_container_width=True)
+
+st.subheader("🧮 Correlation Between Illnesses, Hospitalizations & Fatalities")
+
+# Filter out rows with missing or zero values for clean comparison
+df_corr = filtered_df.dropna(subset=["Illnesses", "Hospitalizations", "Fatalities"])
+df_corr = df_corr[(df_corr["Illnesses"] > 0) & (df_corr["Hospitalizations"] > 0)]
+
+# Optional: Add label like State or Species if needed for tooltips
+fig = px.scatter(
+    df_corr,
+    x="Illnesses",
+    y="Hospitalizations",
+    size="Fatalities",
+    color="Species",
+    hover_data=["State", "Year", "Food", "Location"],
+    title="Illnesses vs Hospitalizations (Bubble Size = Fatalities)",
+    size_max=40
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
