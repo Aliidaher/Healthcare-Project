@@ -180,3 +180,23 @@ fig = px.line(
     title="Yearly Trends of Illnesses, Hospitalizations, and Fatalities"
 )
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("🧮 Correlation Between Illnesses, Hospitalizations & Fatalities")
+
+# Filter out rows with missing or zero values for clean comparison
+df_corr = filtered_df.dropna(subset=["Illnesses", "Hospitalizations", "Fatalities"])
+df_corr = df_corr[(df_corr["Illnesses"] > 0) & (df_corr["Hospitalizations"] > 0)]
+
+# Optional: Add label like State or Species if needed for tooltips
+fig = px.scatter(
+    df_corr,
+    x="Illnesses",
+    y="Hospitalizations",
+    size="Fatalities",
+    color="Species",
+    hover_data=["State", "Year", "Food", "Location"],
+    title="Illnesses vs Hospitalizations (Bubble Size = Fatalities)",
+    size_max=40
+)
+
+st.plotly_chart(fig, use_container_width=True)
