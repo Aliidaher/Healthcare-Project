@@ -226,3 +226,34 @@ fig_avg = px.bar(
 )
 
 st.plotly_chart(fig_avg, use_container_width=True)
+
+st.subheader("🍗 Food Type Breakdown – Top Foods Involved in Outbreaks")
+
+# Drop missing or vague entries
+df_food = df.dropna(subset=["Food"])
+
+# Clean whitespace, convert to title case
+df_food["Food"] = df_food["Food"].astype(str).str.strip().str.title()
+
+# Group and sum illnesses
+food_data = (
+    df_food.groupby("Food")["Illnesses"]
+    .sum()
+    .sort_values(ascending=False)
+    .reset_index()
+)
+
+# Take top 10 food types
+top_foods = food_data.head(10)
+
+# Bar chart
+fig_food = px.bar(
+    top_foods,
+    x="Food",
+    y="Illnesses",
+    title="Top 10 Food Items Associated with Outbreaks",
+    labels={"Illnesses": "Number of Illnesses"},
+    height=500
+)
+
+st.plotly_chart(fig_food, use_container_width=True)
