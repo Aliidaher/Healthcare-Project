@@ -262,3 +262,30 @@ fig_food = px.bar(
 
 st.plotly_chart(fig_food, use_container_width=True)
 
+# === SIDEBAR FILTERS ===
+st.sidebar.header("🔍 Filter the Data")
+
+# Unique values
+available_years = sorted(df["Year"].dropna().unique().astype(int))
+available_states = sorted(df["State"].dropna().unique())
+available_species = sorted(df["Species"].dropna().unique())
+available_locations = sorted(df["Location"].dropna().unique())
+
+# Filters
+selected_years = st.sidebar.slider("Select Year Range", min(available_years), max(available_years), (min(available_years), max(available_years)))
+selected_state = st.sidebar.multiselect("Select State(s)", available_states, default=available_states)
+selected_species = st.sidebar.multiselect("Select Pathogen(s)", available_species, default=available_species)
+selected_location = st.sidebar.multiselect("Select Location(s)", available_locations, default=available_locations)
+
+# Apply filters
+filtered_df = df[
+    (df["Year"] >= selected_years[0]) & (df["Year"] <= selected_years[1]) &
+    (df["State"].isin(selected_state)) &
+    (df["Species"].isin(selected_species)) &
+    (df["Location"].isin(selected_location))
+]
+# Instead of:
+df.groupby(...)
+
+# Use:
+filtered_df.groupby(...)
