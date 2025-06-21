@@ -109,19 +109,24 @@ st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("🧬 Subtype Analysis – Most Common Pathogens")
 
-# Group by species (excluding missing values) and sum illnesses
+# Convert "Species" column to proper NaN if value is the string "nan" or "None"
+df["Species"] = df["Species"].replace(["nan", "NaN", "None"], pd.NA)
+
+# Drop missing values from Species column
+df_species = df.dropna(subset=["Species"])
+
+# Group and sort
 species_data = (
-    df[df["Species"].notna()]
-    .groupby("Species")["Illnesses"]
+    df_species.groupby("Species")["Illnesses"]
     .sum()
     .sort_values(ascending=False)
     .reset_index()
 )
 
-# Take top 10 pathogens
+# Get top 10
 top_species = species_data.head(10)
 
-# Create bar chart
+# Chart
 fig = px.bar(
     top_species,
     x="Species",
@@ -132,3 +137,4 @@ fig = px.bar(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
