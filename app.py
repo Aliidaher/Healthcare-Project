@@ -156,3 +156,23 @@ if not df_food.empty:
     st.plotly_chart(fig_pie, use_container_width=True)
 else:
     st.info("No food data available for the selected filters.")
+
+st.subheader("🧮 Correlation Between Illnesses, Hospitalizations & Fatalities")
+
+df_corr = filtered_df.dropna(subset=["Illnesses", "Hospitalizations", "Fatalities"])
+df_corr = df_corr[(df_corr["Illnesses"] > 0) & (df_corr["Hospitalizations"] > 0)]
+
+if not df_corr.empty:
+    fig = px.scatter(
+        df_corr,
+        x="Illnesses",
+        y="Hospitalizations",
+        size="Fatalities",
+        color="Species",
+        hover_data=["State", "Year", "Food", "Location"],
+        title="Illnesses vs Hospitalizations (Bubble Size = Fatalities)",
+        size_max=40
+    )
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("No data points available for the scatter plot based on current filters.")
