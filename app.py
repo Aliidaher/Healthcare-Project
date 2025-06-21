@@ -64,15 +64,40 @@ fig = px.bar(
 
 st.plotly_chart(fig, use_container_width=True)
 st.caption("ℹ️ Gender and age data were not available in this dataset. Exposure location is used as a proxy for setting-related risk.")
-st.subheader("🗺️ U.S. Map of Foodborne Illnesses by State")
 
-# Group by state
+# Mapping of state names to 2-letter codes
+state_abbrev = {
+    'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
+    'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
+    'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI', 'Idaho': 'ID',
+    'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS',
+    'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+    'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS',
+    'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV',
+    'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM',
+    'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND',
+    'Ohio': 'OH', 'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA',
+    'Rhode Island': 'RI', 'South Carolina': 'SC', 'South Dakota': 'SD',
+    'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+    'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV',
+    'Wisconsin': 'WI', 'Wyoming': 'WY'
+}
+
+# Group by state and sum illnesses
 state_data = df.groupby("State")["Illnesses"].sum().reset_index()
 
-# Plotly Choropleth
+# Add state code column for Plotly
+state_data["StateCode"] = state_data["State"].map(state_abbrev)
+
+# Remove rows with states not in the mapping (e.g., Guam, Puerto Rico)
+state_data = state_data.dropna(subset=["StateCode"])
+
+# Plotly choropleth map
+st.subheader("🗺️ U.S. Map of Foodborne Illnesses by State")
+
 fig = px.choropleth(
     state_data,
-    locations="State",
+    locations="StateCode",
     locationmode="USA-states",
     color="Illnesses",
     scope="usa",
@@ -81,4 +106,5 @@ fig = px.choropleth(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 
