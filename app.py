@@ -197,3 +197,32 @@ fig = px.line(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("📊 Average Illnesses by Month (Across All Years)")
+
+# Prepare month order
+month_order = ["January", "February", "March", "April", "May", "June",
+               "July", "August", "September", "October", "November", "December"]
+
+# Drop missing
+df_avg_month = df.dropna(subset=["Month", "Illnesses"])
+
+# Group and calculate average
+monthly_avg = (
+    df_avg_month.groupby("Month")["Illnesses"]
+    .mean()
+    .reindex(month_order)
+    .reset_index()
+)
+
+# Bar chart
+fig_avg = px.bar(
+    monthly_avg,
+    x="Month",
+    y="Illnesses",
+    title="Average Number of Illnesses by Month (All Years)",
+    labels={"Illnesses": "Avg Illnesses"},
+    height=400
+)
+
+st.plotly_chart(fig_avg, use_container_width=True)
