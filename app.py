@@ -106,5 +106,24 @@ fig = px.choropleth(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+st.subheader("🧬 Subtype Analysis – Most Common Pathogens")
+
+# Group by species (pathogen) and sum illnesses
+species_data = df.groupby("Species")["Illnesses"].sum().sort_values(ascending=False).reset_index()
+
+# Take top 10 pathogens
+top_species = species_data.head(10)
+
+# Create bar chart
+fig = px.bar(
+    top_species,
+    x="Species",
+    y="Illnesses",
+    title="Top 10 Pathogens Causing Foodborne Illnesses",
+    labels={"Illnesses": "Number of Illnesses"},
+    height=500
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 
