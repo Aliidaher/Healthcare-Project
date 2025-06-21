@@ -35,7 +35,7 @@ import plotly.express as px
 st.subheader("📈 Trends Over Time")
 
 # Group by year and sum illnesses
-trend_data = df.groupby("Year")["Illnesses"].sum().reset_index()
+trend_data = filtered_df.groupby("Year")["Illnesses"].sum().reset_index()
 
 # Create line chart
 fig = px.line(
@@ -51,7 +51,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 st.subheader("🏠 Distribution by Exposure Location")
 
-location_data = df.groupby("Location")["Illnesses"].sum().sort_values(ascending=False).reset_index()
+location_data = filtered_df.groupby("Location")["Illnesses"].sum().sort_values(ascending=False).reset_index()
 
 fig = px.bar(
     location_data,
@@ -84,7 +84,7 @@ state_abbrev = {
 }
 
 # Group by state and sum illnesses
-state_data = df.groupby("State")["Illnesses"].sum().reset_index()
+state_data = filtered_df.groupby("State")["Illnesses"].sum().reset_index()
 
 # Add state code column for Plotly
 state_data["StateCode"] = state_data["State"].map(state_abbrev)
@@ -117,7 +117,7 @@ df_species = df.dropna(subset=["Species"])
 
 # Group and sort
 species_data = (
-    df_species.groupby("Species")["Illnesses"]
+    filtered_df_species.groupby("Species")["Illnesses"]
     .sum()
     .sort_values(ascending=False)
     .reset_index()
@@ -145,7 +145,7 @@ df_severity = df.dropna(subset=["Species", "Illnesses", "Hospitalizations"])
 
 # Group and calculate hospitalization rate
 severity_data = (
-    df_severity.groupby("Species")[["Illnesses", "Hospitalizations"]]
+    filtered_df_severity.groupby("Species")[["Illnesses", "Hospitalizations"]]
     .sum()
     .reset_index()
 )
@@ -175,7 +175,7 @@ month_order = ["January", "February", "March", "April", "May", "June",
 
 # Group by Year + Month
 monthly_trend = (
-    df_seasonal.groupby(["Year", "Month"])["Illnesses"]
+    filtered_df_seasonal.groupby(["Year", "Month"])["Illnesses"]
     .sum()
     .reset_index()
 )
@@ -209,7 +209,7 @@ df_avg_month = df.dropna(subset=["Month", "Illnesses"])
 
 # Group and calculate average
 monthly_avg = (
-    df_avg_month.groupby("Month")["Illnesses"]
+    filtered_df_avg_month.groupby("Month")["Illnesses"]
     .mean()
     .reindex(month_order)
     .reset_index()
@@ -241,7 +241,7 @@ df_food = df_food.dropna(subset=["Food"])
 
 # Group and sum illnesses
 food_data = (
-    df_food.groupby("Food")["Illnesses"]
+    filtered_df_food.groupby("Food")["Illnesses"]
     .sum()
     .sort_values(ascending=False)
     .reset_index()
