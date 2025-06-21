@@ -64,3 +64,21 @@ fig = px.bar(
 
 st.plotly_chart(fig, use_container_width=True)
 st.caption("ℹ️ Gender and age data were not available in this dataset. Exposure location is used as a proxy for setting-related risk.")
+st.subheader("🗺️ U.S. Map of Foodborne Illnesses by State")
+
+# Group by state
+state_data = df.groupby("State")["Illnesses"].sum().reset_index()
+
+# Plotly Choropleth
+fig = px.choropleth(
+    state_data,
+    locations="State",
+    locationmode="USA-states",
+    color="Illnesses",
+    scope="usa",
+    color_continuous_scale="Reds",
+    title="Total Foodborne Illnesses by State"
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
