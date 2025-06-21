@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 
 # Load the dataset from the raw GitHub URL
-csv_url = "https://raw.githubusercontent.com/Alidaher/Healthcare-Project/main/outbreaks.csv"
+csv_url = "https://raw.githubusercontent.com/Aliidaher/Healthcare-Project/main/outbreaks.csv"
+
 df = pd.read_csv(csv_url)
 
 # Streamlit App
