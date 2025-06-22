@@ -106,7 +106,6 @@ plt.title("Monthly Illness Count Heatmap by Year")
 plt.xlabel("Month")
 plt.ylabel("Year")
 st.pyplot(fig)
-
 # === Footer ===
 st.markdown("---")
 st.markdown("### 📌 Key Takeaways")
