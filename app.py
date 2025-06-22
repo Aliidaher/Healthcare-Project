@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/Aliidaher/Healthcare-Project/main/outbreaks.csv"
@@ -8,7 +10,11 @@ df = pd.read_csv(csv_url)
 
 # Page config
 st.set_page_config(page_title="Food Safety Dashboard", layout="wide")
-st.title("🦠 Foodborne Illness Outbreaks in the U.S.")
+
+# === Sidebar ===
+st.sidebar.image("https://i.imgur.com/o8QwN8F.png", width=150)
+st.sidebar.title("🍽️ Food Safety Explorer")
+st.sidebar.markdown("Use the filters below to explore the outbreak data.")
 
 # === Cleaning ===
 df.replace("None", pd.NA, inplace=True)
@@ -26,7 +32,6 @@ df = df[(df["Illnesses"] > 0) | (df["Hospitalizations"] > 0) | (df["Fatalities"]
 df = df[df["Year"] >= 1980]
 
 # === Sidebar Filters ===
-st.sidebar.header("🔍 Filter the Data")
 available_years = sorted(df["Year"].dropna().unique().astype(int))
 available_states = sorted(df["State"].dropna().unique())
 available_species = sorted(df["Species"].dropna().unique())
@@ -43,6 +48,10 @@ filtered_df = df[
     (df["Species"].isin(selected_species)) &
     (df["Location"].isin(selected_location))
 ]
+
+# === Title ===
+st.title("🦠 Foodborne Illness Outbreaks in the U.S.")
+st.markdown("Explore food safety data in the U.S. including illnesses, hospitalizations, fatalities, and pathogens.")
 
 # === Raw Data Preview ===
 st.subheader("Raw Data Preview")
@@ -62,7 +71,6 @@ st.subheader("🏠 Distribution by Exposure Location")
 location_data = filtered_df.groupby("Location")["Illnesses"].sum().sort_values(ascending=False).reset_index()
 fig = px.bar(location_data, x="Location", y="Illnesses", title="Total Illnesses by Exposure Location", height=500)
 st.plotly_chart(fig, use_container_width=True)
-st.caption("ℹ️ Gender and age data were not available in this dataset. Exposure location is used as a proxy for setting-related risk.")
 
 # === U.S. Map ===
 st.subheader("🗺️ U.S. Map of Foodborne Illnesses by State")
@@ -84,132 +92,28 @@ state_data = state_data.dropna(subset=["StateCode"])
 fig = px.choropleth(state_data, locations="StateCode", locationmode="USA-states", color="Illnesses", scope="usa", color_continuous_scale="Reds")
 st.plotly_chart(fig, use_container_width=True)
 
-# === Pathogen Subtypes ===
-st.subheader("🧬 Subtype Analysis – Most Common Pathogens")
-species_data = filtered_df.dropna(subset=["Species"]).groupby("Species")["Illnesses"].sum().sort_values(ascending=False).reset_index().head(10)
-fig = px.bar(species_data, x="Species", y="Illnesses", title="Top 10 Pathogens Causing Foodborne Illnesses", height=500)
-st.plotly_chart(fig, use_container_width=True)
-
-# === Severity by Pathogen ===
-st.subheader("💉 Pathogen Severity – Hospitalization Rate")
-severity_data = (
-    filtered_df.dropna(subset=["Species", "Illnesses", "Hospitalizations"])
-    .groupby("Species")[["Illnesses", "Hospitalizations"]]
-    .sum()
-    .reset_index()
-)
-severity_data["Hospitalization Rate (%)"] = (severity_data["Hospitalizations"] / severity_data["Illnesses"]) * 100
-severity_data = severity_data.sort_values("Hospitalization Rate (%)", ascending=False).head(10)
-fig = px.bar(severity_data, x="Species", y="Hospitalization Rate (%)", title="Top 10 Pathogens by Hospitalization Rate", height=500)
-st.plotly_chart(fig, use_container_width=True)
-
-# === Monthly Trends by Year ===
-st.subheader("📅 Seasonal Trend of Foodborne Illnesses by Year")
+# === Heatmap (Calendar View) ===
+st.subheader("📆 Calendar Heatmap – Monthly Illness Trends by Year")
 month_order = ["January", "February", "March", "April", "May", "June",
                "July", "August", "September", "October", "November", "December"]
-monthly_trend = filtered_df.dropna(subset=["Month", "Year", "Illnesses"])
-monthly_trend = monthly_trend.groupby(["Year", "Month"])["Illnesses"].sum().reset_index()
-monthly_trend["Month"] = pd.Categorical(monthly_trend["Month"], categories=month_order, ordered=True)
-monthly_trend = monthly_trend.sort_values(["Year", "Month"])
-fig = px.line(monthly_trend, x="Month", y="Illnesses", color="Year", title="Monthly Trend of Illnesses by Year", markers=True)
-st.plotly_chart(fig, use_container_width=True)
+df_heat = filtered_df.dropna(subset=["Month", "Year", "Illnesses"]).copy()
+df_heat["Month"] = pd.Categorical(df_heat["Month"], categories=month_order, ordered=True)
+pivot = df_heat.groupby(["Year", "Month"])["Illnesses"].sum().unstack().fillna(0)
 
-# === Average Monthly Illnesses (All Years) ===
-st.subheader("📊 Average Illnesses by Month (Across All Years)")
-monthly_avg = (
-    filtered_df.dropna(subset=["Month", "Illnesses"])
-    .groupby("Month")["Illnesses"]
-    .mean()
-    .reindex(month_order)
-    .reset_index()
-)
-fig = px.bar(monthly_avg, x="Month", y="Illnesses", title="Average Number of Illnesses by Month", height=400)
-st.plotly_chart(fig, use_container_width=True)
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.heatmap(pivot, cmap="YlOrRd", linewidths=0.5, annot=True, fmt=".0f", ax=ax)
+plt.title("Monthly Illness Count Heatmap by Year")
+plt.xlabel("Month")
+plt.ylabel("Year")
+st.pyplot(fig)
 
-# === Food Type Breakdown ===
-st.subheader("🍗 Food Type Breakdown – Top Foods Involved in Outbreaks")
-df_food = filtered_df.copy()
-df_food["Food"] = df_food["Food"].astype(str).str.strip().str.title()
-df_food["Food"] = df_food["Food"].replace(["None", "Nan", "NaN", "Unspecified", "Unk", ""], pd.NA)
-df_food = df_food.dropna(subset=["Food"])
-food_data = df_food.groupby("Food")["Illnesses"].sum().sort_values(ascending=False).reset_index().head(10)
-fig = px.bar(food_data, x="Food", y="Illnesses", title="Top 10 Food Items Associated with Outbreaks", height=500)
-st.plotly_chart(fig, use_container_width=True)
-
-st.subheader("🥧 Food Type Distribution (Top 10) – Pie Chart")
-
-if not df_food.empty:
-    food_totals = (
-        df_food.groupby("Food")["Illnesses"]
-        .sum()
-        .sort_values(ascending=False)
-        .reset_index()
-        .head(10)
-    )
-
-    fig_pie = px.pie(
-        food_totals,
-        names="Food",
-        values="Illnesses",
-        title="Top 10 Food Categories Involved in Illnesses"
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
-else:
-    st.info("No food data available for the selected filters.")
-
-st.subheader("📉 Yearly Trends – Illnesses, Hospitalizations & Fatalities")
-
-# Group and sum all severity indicators by year
-yearly_summary = (
-    filtered_df
-    .groupby("Year")[["Illnesses", "Hospitalizations", "Fatalities"]]
-    .sum()
-    .reset_index()
-)
-
-# Melt for multiple lines on same chart
-yearly_melted = yearly_summary.melt(id_vars="Year", value_vars=["Illnesses", "Hospitalizations", "Fatalities"],
-                                     var_name="Outcome", value_name="Count")
-
-fig = px.line(
-    yearly_melted,
-    x="Year",
-    y="Count",
-    color="Outcome",
-    markers=True,
-    title="Yearly Trends of Illnesses, Hospitalizations, and Fatalities"
-)
-st.plotly_chart(fig, use_container_width=True)
-
-st.subheader("🧮 Correlation Between Illnesses, Hospitalizations & Fatalities")
-
-# Filter out rows with missing or zero values for clean comparison
-df_corr = filtered_df.dropna(subset=["Illnesses", "Hospitalizations", "Fatalities"])
-df_corr = df_corr[(df_corr["Illnesses"] > 0) & (df_corr["Hospitalizations"] > 0)]
-
-# Optional: Add label like State or Species if needed for tooltips
-fig = px.scatter(
-    df_corr,
-    x="Illnesses",
-    y="Hospitalizations",
-    size="Fatalities",
-    color="Species",
-    hover_data=["State", "Year", "Food", "Location"],
-    title="Illnesses vs Hospitalizations (Bubble Size = Fatalities)",
-    size_max=40
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-df_severity_loc = filtered_df.dropna(subset=["Location", "Hospitalizations", "Illnesses"])
-loc_severity = df_severity_loc.groupby("Location")[["Hospitalizations", "Illnesses"]].sum()
-loc_severity["Rate"] = (loc_severity["Hospitalizations"] / loc_severity["Illnesses"]) * 100
-loc_severity = loc_severity.sort_values("Rate", ascending=False).reset_index()
-
-fig = px.bar(loc_severity.head(10), x="Location", y="Rate", title="Hospitalization Rate by Location", labels={"Rate": "Hospitalization Rate (%)"})
-st.plotly_chart(fig, use_container_width=True)
-
-species_year = filtered_df.groupby(["Year", "Species"])["Illnesses"].sum().reset_index()
-fig = px.area(species_year, x="Year", y="Illnesses", color="Species", title="Illness Trends by Pathogen Over Time")
-st.plotly_chart(fig, use_container_width=True)
-
+# === Footer ===
+st.markdown("---")
+st.markdown("### 📌 Key Takeaways")
+st.markdown("""
+- 🗓️ **Illnesses peak in warmer months** (especially July & August)
+- 🥩 **Restaurants and homes** are frequent outbreak locations
+- 🧫 **Salmonella** and **Norovirus** are the most common pathogens
+- ⚠️ Severity varies — some foods have **higher hospitalization risks**
+- 🧭 Dashboard supports filtering by year, state, species, and more
+""")
