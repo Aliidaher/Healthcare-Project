@@ -58,7 +58,6 @@ with tab1:
     with col1:
         st.subheader("Raw Data Preview")
         st.dataframe(filtered_df.head())
-
     with col2:
         st.subheader("Summary Statistics")
         st.write(filtered_df.describe(include='all'))
@@ -69,7 +68,6 @@ with tab1:
         trend_data = filtered_df.groupby("Year")["Illnesses"].sum().reset_index()
         fig = px.line(trend_data, x="Year", y="Illnesses", title="Illnesses Over Time", markers=True)
         st.plotly_chart(fig, use_container_width=True)
-
     with col4:
         st.subheader("📉 Hospitalizations & Fatalities")
         yearly_summary = (
@@ -77,7 +75,7 @@ with tab1:
             .sum().reset_index()
         )
         yearly_melted = yearly_summary.melt(id_vars="Year", value_vars=["Illnesses", "Hospitalizations", "Fatalities"],
-                                            var_name="Outcome", value_name="Count")
+                                             var_name="Outcome", value_name="Count")
         fig = px.line(yearly_melted, x="Year", y="Count", color="Outcome", markers=True)
         st.plotly_chart(fig, use_container_width=True)
 
@@ -86,7 +84,18 @@ with tab2:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🗺️ Illnesses by State")
-        state_abbrev = {...}  # use same mapping here or copy full dictionary
+        state_abbrev = {
+            "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA",
+            "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA",
+            "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS",
+            "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA",
+            "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT",
+            "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM",
+            "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK",
+            "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+            "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT",
+            "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"
+        }
         state_data = filtered_df.groupby("State")["Illnesses"].sum().reset_index()
         state_data["StateCode"] = state_data["State"].map(state_abbrev)
         fig = px.choropleth(state_data.dropna(subset=["StateCode"]),
@@ -112,7 +121,7 @@ with tab3:
     with col1:
         st.subheader("Top Pathogens")
         species_data = (
-            filtered_df[filtered_df["Species"].notna() & (filtered_df["Species"].str.lower() != "nan")]
+            filtered_df[filtered_df["Species"].notna()]
             .groupby("Species")["Illnesses"]
             .sum().sort_values(ascending=False).reset_index().head(10)
         )
@@ -158,9 +167,9 @@ with tab3:
 st.markdown("---")
 st.markdown("### 📌 Key Takeaways")
 st.markdown("""
-- 🗓️ **Illnesses peak in warmer months** (especially July & August)  
-- 🥩 **Restaurants and homes** are frequent outbreak locations  
-- 🧫 **Salmonella** and **Norovirus** are the most common pathogens  
-- ⚠️ Severity varies — some foods have **higher hospitalization risks**  
-- 🧭 Dashboard supports filtering by year, state, species, and more  
+- 🗓️ **Illnesses peak in warmer months** (especially July & August)
+- 🥩 **Restaurants and homes** are frequent outbreak locations
+- 🧫 **Salmonella** and **Norovirus** are the most common pathogens
+- ⚠️ Severity varies — some pathogens lead to **higher fatalities**
+- 🧭 Dashboard supports filtering by year, state, species, and more
 """)
