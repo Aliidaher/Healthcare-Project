@@ -150,11 +150,19 @@ with tab3:
         fig = px.bar(food_data, x="Food", y="Illnesses", title="Top 10 Food Items")
         st.plotly_chart(fig, use_container_width=True)
 
-    with col4:
-        st.subheader("Top Food Categories (Pie)")
-        food_totals = df_food.groupby("Food")["Illnesses"].sum().sort_values(ascending=False).reset_index().head(10)
-        fig = px.pie(food_totals, names="Food", values="Illnesses", title="Top 10 Foods (Pie Chart)")
-        st.plotly_chart(fig, use_container_width=True)
+  with col4:
+    st.subheader("Top Pathogens Causing Fatalities")
+    fatal_data = (
+        filtered_df[filtered_df["Species"].notna()]
+        .groupby("Species")["Fatalities"]
+        .sum()
+        .sort_values(ascending=False)
+        .reset_index()
+        .head(10)
+    )
+    fig = px.bar(fatal_data, x="Species", y="Fatalities", title="Top 10 Pathogens by Fatalities")
+    st.plotly_chart(fig, use_container_width=True)
+
 
 # === Footer ===
 st.markdown("---")
