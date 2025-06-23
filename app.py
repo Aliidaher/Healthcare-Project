@@ -150,7 +150,7 @@ with tab3:
         fig = px.bar(food_data, x="Food", y="Illnesses", title="Top 10 Food Items")
         st.plotly_chart(fig, use_container_width=True)
 
-  with col4:
+   with col4:
     st.subheader("Top Pathogens Causing Fatalities")
     fatal_data = (
         filtered_df[filtered_df["Species"].notna()]
