@@ -7,6 +7,22 @@ import matplotlib.pyplot as plt
 # Load the dataset
 csv_url = "https://raw.githubusercontent.com/Aliidaher/Healthcare-Project/main/outbreaks.csv"
 df = pd.read_csv(csv_url)
+import streamlit as st
+
+# --- PASSWORD LANDING PAGE ---
+password = st.text_input("🔒 Enter password to access the dashboard:", type="password")
+
+# You must STOP execution if incorrect BEFORE any other visuals load:
+if password != "MySecret123":
+    st.warning("Please enter the correct password to view the dashboard.")
+    st.stop()
+
+# Dashboard starts here
+st.set_page_config(page_title="Food Safety Dashboard", layout="wide")
+st.title("🦠 Foodborne Illness Outbreaks in the U.S.")
+
+# Your entire dashboard code follows ↓
+
 
 # Page config
 st.set_page_config(page_title="Food Safety Dashboard", layout="wide")
@@ -173,16 +189,3 @@ st.markdown("""
 - ⚠️ Severity varies — some pathogens lead to **higher fatalities**
 - 🧭 Dashboard supports filtering by year, state, species, and more
 """)
-import streamlit as st
-
-# --- PASSWORD GATE ---
-password = st.text_input("Enter password to access the dashboard:", type="password")
-
-if password != "MySecurePassword123":
-    st.warning("Please enter the correct password to view the dashboard.")
-    st.stop()
-
-# Your dashboard code goes below here ↓
-st.title("🦠 Foodborne Illness Outbreaks in the U.S.")
-# ...
-
