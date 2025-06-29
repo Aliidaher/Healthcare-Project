@@ -173,3 +173,16 @@ st.markdown("""
 - ⚠️ Severity varies — some pathogens lead to **higher fatalities**
 - 🧭 Dashboard supports filtering by year, state, species, and more
 """)
+import streamlit as st
+
+# --- PASSWORD GATE ---
+password = st.text_input("Enter password to access the dashboard:", type="password")
+
+if password != "MySecurePassword123":
+    st.warning("Please enter the correct password to view the dashboard.")
+    st.stop()
+
+# Your dashboard code goes below here ↓
+st.title("🦠 Foodborne Illness Outbreaks in the U.S.")
+# ...
+
